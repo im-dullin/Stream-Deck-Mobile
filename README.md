@@ -1,217 +1,87 @@
-# 가상 스트림덱 (Stream Deck Virtual)
+# 가상 스트림덱
 
-> 스마트폰을 Elgato Stream Deck처럼 사용해 PC를 제어하는 LAN 전용 데스크톱+모바일 시스템. 물리장치 없이 무한 버튼, 한 번 페어링 후 자동 재연결, 한 버튼에 여러 동작 매핑.
-
-![macOS](https://img.shields.io/badge/macOS-supported-blue) ![Windows](https://img.shields.io/badge/Windows-supported-blue) ![License](https://img.shields.io/badge/license-MIT-green)
+손에 든 폰을, PC의 컨트롤 패널로.
 
 ---
 
-## 이게 뭐예요?
+Elgato Stream Deck은 우아한 기기입니다. 하지만 비싸고, 책상을 차지하고, 버튼 수가 고정되어 있습니다. 한편 우리에겐 이미 매일 들고 다니는 고해상도 멀티터치 디스플레이가 있습니다 — 스마트폰.
 
-- **PC 에이전트** (Tauri, Rust+React): 백그라운드 상주, LAN의 WebSocket 서버 + 모바일 웹 호스팅
-- **모바일 데크** (Flutter web): 폰 브라우저로 접속, 그리드 버튼 탭 → PC에서 액션 실행
-- **액션 타입**: 로컬 앱 실행 / URL 열기 / 한 버튼에 최대 10개 시퀀셜 (복합)
-- **페어링**: 호스트·포트 입력 → PC에서 1회 승인 → 이후 영구 자동 재연결
+가상 스트림덱은 그 디스플레이를 PC 위의 데크로 바꿉니다. 같은 와이파이, 1회 페어링, 1회 승인. 그 후로는 폰을 켜는 것만으로 PC와 연결됩니다.
 
 ---
 
-# 🟢 트랙 1 — 그냥 써보고 싶은 사용자 (비개발자 OK)
+## 한 버튼, 여러 동작
 
-설치 도구·빌드 환경 전혀 필요 없음.
+자주 쓰는 앱과 URL을 그리드에 매핑합니다. 한 버튼에 최대 10개의 동작을 시퀀셜로 묶을 수 있습니다. "작업 모드" 한 번에 Slack과 Notion이 열리고, 로파이 플레이리스트가 자동으로 재생됩니다.
 
-## A. PC에 에이전트 설치
+## 필요한 것
 
-1. https://github.com/im-dullin/Stream-Deck-Mobile/releases 접속
-2. 본인 OS 맞는 파일 다운로드:
-   - **macOS**: `가상 스트림덱_x.y.z_aarch64.dmg` (M1/M2/M3) 또는 `_x64.dmg` (Intel)
-   - **Windows**: `가상 스트림덱_x.y.z_x64_ko-KR.msi`
-3. 더블클릭으로 설치
+PC 한 대. 폰 한 대. 같은 와이파이.
 
-> **⚠️ Releases가 비어있다면**: 아직 첫 릴리즈 전입니다. 강사가 `git tag v0.1.0 && git push origin v0.1.0` 한 번 실행하면 GitHub Actions 가 자동 빌드해서 ~10분 후 Releases에 첨부됩니다. 그동안은 아래 **트랙 2** 로 진행.
-
-### macOS 첫 실행
-
-- **Launchpad** 또는 **Spotlight** (`Cmd+Space`) → "가상 스트림덱" 검색 → 실행
-- "확인되지 않은 개발자" 경고 시: **시스템 설정 → 개인정보 보호 및 보안** → "그래도 열기"
-- 네트워크 권한 팝업 → 허용
-
-### Windows 첫 실행
-
-- 시작 메뉴 → "가상 스트림덱" → 실행
-- "Windows의 PC 보호" 경고 시: **"추가 정보"** → **"실행"** 클릭 (코드사이닝 없는 오픈소스 SW의 표준)
-- Windows Defender 방화벽 팝업 → **"개인 네트워크"** 체크 → "액세스 허용"
-
-## B. 폰에서 사용
-
-1. PC IP 주소 확인
-   - **macOS**: 시스템 설정 → 네트워크 → Wi-Fi → 세부 사항 → "IP 주소"
-   - **Windows**: 시작 → "cmd" → `ipconfig` → "IPv4 주소" 값 (예: `192.168.0.7`)
-2. **폰 브라우저** (Safari/Chrome) 주소창 → `http://192.168.0.7:8090` (위 IP 사용)
-3. "PC 페어링" 화면 → 같은 IP + 포트 `41234` 입력 → **페어링 요청**
-4. PC 화면 상단 배너 → **승인**
-5. 폰 화면이 그리드로 자동 전환 → 끝
-6. **(중요) 홈 화면에 추가**:
-   - Safari: 공유 버튼 → "홈 화면에 추가"
-   - Chrome: ⋮ → "앱 설치" 또는 "홈 화면에 추가"
-   - 그 화면에서 한 번 더 페어링·승인 필요 (iOS PWA 컨텍스트 분리), 이후 영구 자동 재연결
-
-## C. 버튼 설정
-
-PC 화면에서:
-1. 빈 셀 클릭 → 우측에 인스펙터 열림
-2. **`+ 앱`** → 설치된 앱 목록에서 선택 (아이콘 자동)
-3. **`+ URL`** → 주소 입력 (예: `https://www.youtube.com/playlist?list=...` → 자동 재생됨)
-4. 한 셀에 최대 10개까지 추가 → 폰에서 한 번 탭하면 순서대로 다 실행
+클라우드 없음. 계정 없음. 구독 없음. 모든 데이터는 두 디바이스 사이에서만 흐릅니다.
 
 ---
 
-# 🛠️ 트랙 2 — 소스에서 빌드 + 확장 (개발자/AX 학습자)
+## 시작
 
-## A. 도구 설치 — macOS
+[Releases](https://github.com/im-dullin/Stream-Deck-Mobile/releases)에서 OS에 맞는 인스톨러를 받습니다.
 
-```bash
-# Homebrew (없으면 먼저)
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+&nbsp;&nbsp;&nbsp;&nbsp;macOS&nbsp;&nbsp;·&nbsp;&nbsp;`.dmg`
+&nbsp;&nbsp;&nbsp;&nbsp;Windows&nbsp;&nbsp;·&nbsp;&nbsp;`.msi`
 
-brew install rust node git
-brew install --cask flutter
-```
+설치 후 실행하면 작은 창이 열립니다. 거기 적힌 주소를 폰 브라우저에 입력하고, PC에서 "승인" 한 번. 그게 전부입니다.
 
-확인:
-```bash
-rustc --version && node --version && flutter --version
-```
+폰의 "홈 화면에 추가" 를 누르면 진짜 앱처럼 보입니다.
 
-## B. 도구 설치 — Windows
-
-> winget이 동작하면 가장 간편하지만, **회사·학교 정책이나 Win10 N/KN 에디션** 에서는 안 깔려 있을 수 있습니다. 우선 PowerShell에서 `winget --version` 으로 확인. 안 나오면 **방법 2** 의 직접 다운로드 링크 사용.
-
-### 방법 1 — winget이 동작하는 경우 (편함)
-
-PowerShell (일반 권한):
-```powershell
-winget install -e --id Git.Git
-winget install -e --id Rustlang.Rustup
-winget install -e --id Microsoft.VisualStudio.2022.BuildTools
-winget install -e --id OpenJS.NodeJS.LTS
-```
-
-설치 후 **시작 메뉴 → Visual Studio Installer → 위 항목 'Modify'** → **`Desktop development with C++` 워크로드 체크** → Install. (Rust가 Windows에서 컴파일하려면 이 C++ 빌드 도구가 반드시 필요.)
-
-Flutter는 winget 공식 패키지가 없어서 다음 단계의 수동 설치를 따라야 함.
-
-### 방법 2 — 직접 다운로드 (winget 없어도 OK, 비개발자도 가능)
-
-각 링크 클릭 → 안내에 따라 설치:
-
-| 도구 | 다운로드 링크 | 설치 메모 |
-|---|---|---|
-| **Git** | https://git-scm.com/download/win | 기본 옵션으로 Next 계속 |
-| **Rust** | https://win.rustup.rs/x86_64 (rustup-init.exe) | 더블클릭 → `1` 입력 (default) → MSVC 안내가 뜨면 그에 따라 VS Build Tools 설치 |
-| **Visual Studio 2022 Build Tools** | https://aka.ms/vs/17/release/vs_BuildTools.exe | 설치 화면에서 **`Desktop development with C++`** 워크로드 체크 → Install |
-| **Node.js LTS** | https://nodejs.org/ko/download | "Windows Installer (.msi)" 다운로드 → 기본 옵션으로 설치 |
-| **Flutter SDK** | https://docs.flutter.dev/get-started/install/windows | "Download Flutter SDK" zip 다운 → `C:\flutter` 에 압축 풀기 (경로에 **공백/한글 X**) |
-| **Flutter PATH 설정** | (수동) | 시작 → "환경 변수" 검색 → "사용자 변수" → `Path` 선택 → 편집 → 새로 만들기 → `C:\flutter\bin` 추가 → 확인 |
-| **WebView2 Runtime** *(트랙 1 인스톨러 사용 시 자동, 트랙 2 소스 빌드 시에만 필요)* | https://developer.microsoft.com/en-us/microsoft-edge/webview2/ | "Evergreen Standalone Installer" 다운로드 → 실행 (Win11/최신 Win10는 보통 이미 있음) |
-
-**PowerShell 새 창 열고** 확인 (셸 안 닫고 그대로 진행하면 PATH 갱신 안 됨):
-```powershell
-git --version
-rustc --version
-cargo --version
-node --version
-flutter --version
-flutter doctor       # Windows toolchain ✓, Chrome ✓ 면 OK. Android/iOS는 ! 무시
-```
-
-## C. 코드 받고 빌드
-
-```bash
-git clone https://github.com/im-dullin/Stream-Deck-Mobile.git
-cd Stream-Deck-Mobile
-
-# 1) 모바일 웹 빌드 (에이전트에 임베드됨)
-cd mobile
-flutter pub get
-flutter build web --release
-
-# 2) 에이전트 의존성 + 실행
-cd ../agent          # Windows는 cd ..\agent
-npm install
-npm run tauri dev    # 첫 빌드 5~10분, 이후 30초
-```
-
-### 배포용 인스톨러 만들기
-
-```bash
-cd agent
-npm run tauri build
-# macOS:   src-tauri/target/release/bundle/dmg/가상 스트림덱_0.1.0_aarch64.dmg
-# Windows: src-tauri\target\release\bundle\msi\가상 스트림덱_0.1.0_x64_ko-KR.msi
-```
-
-이 인스톨러를 다른 학생에게 주면 트랙 1처럼 사용 가능.
+상세 흐름은 [사용자 가이드](./training/03-developer-guide.md)에.
 
 ---
 
-## 디렉토리 구조
+## 구조
 
 ```
-streamdeck-virtual/
-├── schema/protocol.ts            # 와이어 프로토콜 단일 진실 소스
-├── agent/                        # PC 에이전트 (Tauri 2.x)
-│   ├── src-tauri/src/            # Rust: WS 서버, 액션 실행, 앱 디스커버리, 임베드 HTTP
-│   └── src/                      # React 에디터 UI
-├── mobile/                       # 모바일 데크 (Flutter Web)
-│   └── lib/                      # Dart: 페어링·재연결·데크 UI
-├── training/                     # AX 교육 자료 (한국어)
-│   ├── 01-conversation-log.md    # AI 협업 워크플로우 회고
-│   ├── 02-project-spec.md        # 프로젝트 아이템 정의서
-│   └── 03-developer-guide.md     # 실행 가이드 + 트러블슈팅
-└── .github/workflows/release.yml # 태그 push → 인스톨러 자동 빌드·릴리즈
+       ┌──────────────────────┐        ┌──────────────────────────┐
+       │   모바일              │        │   PC 에이전트             │
+       │   Flutter Web        │        │   Tauri 2 (Rust + React) │
+       │                      │        │                          │
+       │   그리드·페어링       │◄──WS──►│   토큰 인증·액션 실행      │
+       │                      │        │                          │
+       │                      │◄─HTTP──│   모바일 웹 번들 호스팅   │
+       └──────────────────────┘        └──────────────────────────┘
 ```
 
-## 아키텍처 핵심
+PC 에이전트가 모바일 웹 번들을 직접 호스팅합니다. 폰에는 아무것도 깔리지 않습니다. 단지 URL을 엽니다.
 
-```
-[Mobile · Flutter Web]          [PC · Tauri Agent]
-┌────────────────┐  WS :41234   ┌──────────────────────────┐
-│ Deck Surface   │ ◄──────────► │ WS Server                │
-└────────────────┘   JSON       │  - 페어링 승인 플로우     │
-        ▲                       │  - 액션 디스패치          │
-        │ HTTP :8090            ├──────────────────────────┤
-        └────  serves  ◄────────│ Embedded Static Server   │
-              build/web         │  - Flutter 웹 번들 임베드 │
-                                ├──────────────────────────┤
-                                │ Editor Window (Tauri)    │
-                                │  - 그리드·인스펙터·피커  │
-                                └──────────────────────────┘
-```
-
-- LAN 전용. 외부망 안 통함.
-- 디바이스별 UUID 토큰 + PC 1회 승인 = 페어링.
-- 모든 액션 데이터는 PC `pairings.json` / `profile.json` 에 저장.
-
-## 보안 주의
-
-- 같은 와이파이의 누구나 페어링을 시도할 수 있음 (대신 PC에서 매번 명시 승인 요구)
-- 에이전트를 **관리자 권한으로 실행하지 말 것**
-- 카페·공용 와이파이에서는 사용 비권장 (LAN 전제)
-
-## 라이선스
-
-MIT. 자유롭게 사용·수정·배포 가능. [LICENSE](./LICENSE).
-
-## 기여
-
-PR 환영. 큰 변경은 issue로 먼저 논의해주세요.
+&nbsp;&nbsp;프로토콜&nbsp;&nbsp;·&nbsp;&nbsp;JSON over WebSocket
+&nbsp;&nbsp;인증&nbsp;&nbsp;·&nbsp;&nbsp;디바이스별 UUID 토큰 · PC 1회 승인
+&nbsp;&nbsp;범위&nbsp;&nbsp;·&nbsp;&nbsp;LAN 한정
 
 ---
 
-## AX 교육용 자료
+## 디자인 노트
 
-본 레포지토리는 AX(AI Transformation) 교육 실습용으로 설계되었습니다. [`training/`](./training):
+폰에 앱을 깔지 않는 것이 의도입니다. 앱스토어 심사도, 사이드로드도 없습니다. 같은 URL이 모든 OS에서 같이 동작합니다.
 
-- [`01-conversation-log.md`](./training/01-conversation-log.md) — AI와 함께 이 프로젝트를 만든 실제 워크플로우 회고 + AX 협업 9원칙
-- [`02-project-spec.md`](./training/02-project-spec.md) — 학생이 본인의 AI 에이전트에 입력으로 줄 수 있는 공식 spec + 난이도별 확장 과제
-- [`03-developer-guide.md`](./training/03-developer-guide.md) — 사전설치 → 실행 → 트러블슈팅 상세
+한 번 발급된 페어링 토큰은 영구합니다. 매번 묻지 않습니다.
+
+한 버튼은 곧 하나의 작은 자동화입니다. 같은 패턴이 매크로·크롤링·카드뉴스 자동화로 그대로 확장됩니다.
+
+---
+
+## 빌드 · 확장
+
+소스에서 빌드하거나 새 액션 타입을 만들고 싶다면, [개발자 가이드](./training/03-developer-guide.md)에 macOS · Windows · winget 없는 환경 각각의 단계가 있습니다.
+
+---
+
+## 만든 과정
+
+이 저장소는 AI 코딩 에이전트와의 협업으로 처음부터 만들어졌습니다. 그 대화와 의사결정의 기록이 [`training/`](./training)에 그대로 남아있습니다. AX 교육 실습용으로 설계되어, 학생이 같은 흐름을 재현하거나 확장할 수 있습니다.
+
+— [`01-conversation-log.md`](./training/01-conversation-log.md) · 워크플로우 회고와 AX 협업 9원칙
+— [`02-project-spec.md`](./training/02-project-spec.md) · 프로젝트 아이템 정의서와 난이도별 챌린지
+— [`03-developer-guide.md`](./training/03-developer-guide.md) · 사전 설치와 트러블슈팅
+
+---
+
+[MIT](./LICENSE)
