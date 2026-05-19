@@ -6,43 +6,68 @@
 
 ## 1. 시스템 요구사항
 
-- **OS**: macOS 13+ (Apple Silicon 또는 Intel)
+- **OS**: macOS 11+ (Apple Silicon/Intel) 또는 **Windows 10 1803+ / 11** (x64)
 - **램**: 8GB 이상 권장
 - **디스크**: 약 4GB (Rust + Flutter + 빌드 캐시)
 - **네트워크**: 폰과 같은 WiFi (LAN-only MVP)
+- **Windows 전용 런타임**: **WebView2 Runtime** (Win11 기본 포함, Win10는 인스톨러가 자동 설치)
 
 ---
 
 ## 2. 사전 설치
 
-### 2.1 Homebrew (이미 있으면 스킵)
+### 2.A macOS
+
 ```bash
+# Homebrew (없으면)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
 
-### 2.2 Rust 툴체인
-```bash
-brew install rust
-which rustc cargo   # /opt/homebrew/bin/...
-```
-
-### 2.3 Flutter SDK
-```bash
+# Toolchain
+brew install rust node
 brew install --cask flutter
-flutter --version   # 3.41+ 확인
+
+# 확인
+rustc --version && node --version && flutter --version
 ```
 
-### 2.4 Node.js (Tauri 프론트엔드 번들링용)
-```bash
-node --version      # 20+ 권장
-# 없으면: brew install node  또는  nvm install --lts
+### 2.B Windows (PowerShell, 일반 권한)
+
+**중요 순서**: Rust → MSVC Build Tools → Node → Flutter → 셸 재시작.
+
+```powershell
+# 1) Git
+winget install -e --id Git.Git
+
+# 2) Rust — rustup-init.exe 다운받아 실행 (https://rustup.rs)
+#    설치 중 MSVC 미감지 시 자동으로 Visual Studio Build Tools 설치 안내
+#    수동 설치: winget install -e --id Rustlang.Rustup
+winget install -e --id Rustlang.Rustup
+
+# 3) Visual Studio Build Tools (C++ 워크로드)
+#    Tauri의 Rust 코드를 Windows 네이티브로 링크하려면 필수
+winget install -e --id Microsoft.VisualStudio.2022.BuildTools
+#    설치 후: Visual Studio Installer → Modify → "Desktop development with C++" 워크로드 체크 → Install
+
+# 4) Node.js LTS
+winget install -e --id OpenJS.NodeJS.LTS
+
+# 5) Flutter — winget에 공식 패키지 없음, 수동 권장
+#    https://docs.flutter.dev/get-started/install/windows → SDK zip 다운로드
+#    C:\flutter 에 압축 해제 (경로에 공백 X)
+#    제어판 → 시스템 → 고급 시스템 설정 → 환경변수 → Path에 C:\flutter\bin 추가
 ```
 
-### 2.5 (선택) `flutter doctor`
-```bash
-flutter doctor
+**셸 재시작 후 확인**:
+```powershell
+git --version          # git version 2.x
+rustc --version        # rustc 1.95+
+cargo --version        # cargo 1.95+
+node --version         # v20.x
+flutter --version      # Flutter 3.x
+flutter doctor         # Windows toolchain + Chrome 만 ✓ 필요. Android/iOS는 ! 무시 가능
 ```
-필수: iOS/Android 항목은 무시 가능. 웹 타겟만 쓰면 충분.
+
+> **WebView2 Runtime**: 인스톨러로 배포된 .msi 는 WebView2 를 내장(`offlineInstaller` 모드)해서 자동 설치. 소스 빌드 / `npm run tauri dev` 환경은 Win10 1803+/Win11 의 기본 Edge가 제공하는 WebView2 사용. 그래도 깔려있지 않다는 에러가 뜨면 https://developer.microsoft.com/en-us/microsoft-edge/webview2/ 에서 "Evergreen Standalone Installer" 다운로드.
 
 ---
 
@@ -142,6 +167,20 @@ flutter run -d chrome --web-port 8091   # 다른 포트로
 ---
 
 ## 8. 트러블슈팅
+
+### 8.0 Windows 자주 부딪히는 문제
+
+| 증상 | 원인 | 해결 |
+|---|---|---|
+| `rustc: command not found` (PowerShell 새로 띄워도) | PATH 갱신 안 됨 | 로그아웃·재로그인. 또는 `$env:Path` 직접 확인 |
+| `link.exe not found` 빌드 에러 | MSVC Build Tools 없음 | VS Build Tools 설치 + "Desktop development with C++" 워크로드 + 재부팅 |
+| `flutter doctor` 에서 Visual Studio 미감지 | C++ 워크로드 누락 | VS Installer → Modify → "Desktop development with C++" 추가 |
+| 폰에서 빈 화면 / 연결 시 timeout | Windows Defender 방화벽 차단 | 방화벽 팝업이 떴을 때 "개인 네트워크"+"액세스 허용" 체크. 놓쳤으면 제어판 → Windows Defender 방화벽 → 인바운드 규칙에서 "가상 스트림덱" 찾아 허용 |
+| 인스톨러 실행 시 "Windows의 PC 보호" 경고 | 코드사이닝 없음 (오픈소스 SW 정상) | "추가 정보" → "실행" 클릭 |
+| `npm run tauri dev` 가 5분 넘게 안 끝남 | 첫 의존성 다운로드 중 (Rust 크레이트 ~500개 컴파일) | 10분 인내. `target/` 캐시 생긴 이후로는 빠름. 중간에 끊으면 다시 받음 |
+| WebView2 missing 에러 (Win10 구버전) | WebView2 Runtime 부재 | https://developer.microsoft.com/en-us/microsoft-edge/webview2/ → Evergreen 다운로드 |
+| 응용 프로그램 선택 모달이 빈 목록 | PowerShell ExecutionPolicy 차단 또는 시작메뉴 비어있음 | `Get-ExecutionPolicy` 확인. `Restricted`면 `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` |
+| V3·알약 등 국내 AV가 .exe 차단 | 미서명 Rust 바이너리 휴리스틱 false-positive | AV 예외 추가 (학생 본인 책임) 또는 소스 빌드로 본인 머신에서 컴파일 |
 
 ### 8.1 폰에서 흰 화면만 보임
 **원인**: `flutter run -d chrome` 디버그 모드는 외부 디바이스에서 동작 안 함.
