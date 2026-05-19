@@ -24,17 +24,23 @@ pub struct InstalledApp {
 
 pub async fn discover() -> Result<Vec<InstalledApp>> {
     #[cfg(target_os = "macos")]
-    {
-        macos::discover().await
-    }
+    let mut apps = macos::discover().await?;
     #[cfg(target_os = "windows")]
-    {
-        windows::discover().await
-    }
+    let mut apps = windows::discover().await?;
     #[cfg(not(any(target_os = "macos", target_os = "windows")))]
-    {
-        Ok(Vec::new())
+    let mut apps: Vec<InstalledApp> = Vec::new();
+
+    // macOS file systems (HFS+/APFS) store Hangul filenames in NFD form
+    // (e.g. "카" → "ㅋ"+"ㅏ"). Rust's `read_dir` returns the NFD bytes as-is,
+    // which then renders as separated jamo on the deck UI and breaks
+    // path matching for the `open` command. NTFS uses NFC; normalizing
+    // there is idempotent. Either way we ship NFC over the wire.
+    use unicode_normalization::UnicodeNormalization;
+    for app in &mut apps {
+        app.name = app.name.nfc().collect::<String>();
+        app.path = app.path.nfc().collect::<String>();
     }
+    Ok(apps)
 }
 
 // =====================================================================
