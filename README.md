@@ -2,7 +2,7 @@
 
 들고 있는 폰을 PC 컨트롤 패널로.
 
-<video src="https://github.com/im-dullin/Stream-Deck-Mobile/raw/main/docs/demo.mp4" controls width="100%"></video>
+![가상 스트림덱 시연](https://github.com/im-dullin/Stream-Deck-Mobile/raw/main/docs/demo.gif)
 
 ---
 
