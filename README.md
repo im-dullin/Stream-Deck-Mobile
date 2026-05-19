@@ -22,18 +22,57 @@ PC 한 대. 폰 한 대. 같은 와이파이.
 
 ---
 
-## 시작
+## 설치
 
-[Releases](https://github.com/im-dullin/Stream-Deck-Mobile/releases)에서 OS에 맞는 인스톨러를 받습니다.
+### macOS
 
-&nbsp;&nbsp;&nbsp;&nbsp;macOS&nbsp;&nbsp;·&nbsp;&nbsp;`.dmg`
-&nbsp;&nbsp;&nbsp;&nbsp;Windows&nbsp;&nbsp;·&nbsp;&nbsp;`.msi`
+1. [Releases](https://github.com/im-dullin/Stream-Deck-Mobile/releases) 에서 본인 맥에 맞는 파일을 받습니다.
+   - Apple Silicon (M1·M2·M3·M4) — `가상 스트림덱_x.y.z_aarch64.dmg`
+   - Intel — `가상 스트림덱_x.y.z_x64.dmg`
+2. `.dmg` 를 더블클릭 → 열린 창에서 앱 아이콘을 Applications 폴더로 드래그.
+3. Spotlight(`⌘Space`) → "가상 스트림덱" → 실행.
 
-설치 후 실행하면 작은 창이 열립니다. 거기 적힌 주소를 폰 브라우저에 입력하고, PC에서 "승인" 한 번. 그게 전부입니다.
+> 첫 실행 시 "확인되지 않은 개발자" 경고가 뜨면, **시스템 설정 → 개인정보 보호 및 보안** 으로 가서 하단의 "그래도 열기" 를 클릭합니다.
 
-폰의 "홈 화면에 추가" 를 누르면 진짜 앱처럼 보입니다.
+### Windows
 
-상세 흐름은 [사용자 가이드](./training/03-developer-guide.md)에.
+1. [Releases](https://github.com/im-dullin/Stream-Deck-Mobile/releases) 에서 `가상 스트림덱_x.y.z_x64_ko-KR.msi` 를 받습니다.
+2. 더블클릭 → 설치 마법사를 따라 Next · Install · Finish.
+3. 시작 메뉴 → "가상 스트림덱" → 실행.
+
+> "Windows의 PC 보호" 화면이 뜨면 **추가 정보 → 실행** 을 누릅니다. 코드 사이닝이 없는 오픈소스 SW의 표준 흐름입니다.
+
+### 첫 실행 (공통)
+
+방화벽이 네트워크 접근을 묻습니다. **개인 네트워크** 만 체크하고 허용하세요. 그러면 작은 창이 뜨고 상단에 호스트와 포트가 표시됩니다.
+
+---
+
+## 폰에서 연결
+
+1. PC의 IP 주소를 확인합니다.
+   - macOS — 시스템 설정 → 네트워크 → Wi-Fi → 세부사항 → IP 주소
+   - Windows — `cmd` 열고 `ipconfig` 입력 → "IPv4 주소"
+2. 폰 브라우저(Safari / Chrome) 주소창에 `http://<위 IP>:8090` 입력.
+3. 페어링 화면에서 IP와 포트(`41234`) 입력 → **페어링 요청**.
+4. PC 창 상단 배너에서 **승인**.
+5. 폰이 자동으로 데크 화면으로 전환됩니다.
+
+브라우저의 "홈 화면에 추가" 를 누르면 진짜 앱처럼 보입니다.
+&nbsp;&nbsp;&nbsp;&nbsp;Safari — 공유 버튼 → 홈 화면에 추가
+&nbsp;&nbsp;&nbsp;&nbsp;Chrome — `⋮` → 앱 설치
+그 화면에서 한 번 더 페어링이 필요합니다 (iOS PWA 별도 저장소). 그 후로는 영구 자동 재연결.
+
+---
+
+## 버튼 설정
+
+PC 창에서 빈 셀을 클릭하면 오른쪽에 인스펙터가 열립니다.
+
+&nbsp;&nbsp;**`+ 앱`** &nbsp;·&nbsp; 설치된 앱 목록에서 아이콘과 함께 선택
+&nbsp;&nbsp;**`+ URL`** &nbsp;·&nbsp; 주소 입력 (예: 유튜브 플레이리스트 → 자동 재생)
+
+한 셀에 최대 10개까지 추가할 수 있고, 폰에서 한 번 탭하면 순서대로 모두 실행됩니다. 라벨은 자유롭게 수정 가능하며 변경은 즉시 폰에 반영됩니다.
 
 ---
 
@@ -56,8 +95,6 @@ PC 에이전트가 모바일 웹 번들을 직접 호스팅합니다. 폰에는 
 &nbsp;&nbsp;인증&nbsp;&nbsp;·&nbsp;&nbsp;디바이스별 UUID 토큰 · PC 1회 승인
 &nbsp;&nbsp;범위&nbsp;&nbsp;·&nbsp;&nbsp;LAN 한정
 
----
-
 ## 디자인 노트
 
 폰에 앱을 깔지 않는 것이 의도입니다. 앱스토어 심사도, 사이드로드도 없습니다. 같은 URL이 모든 OS에서 같이 동작합니다.
@@ -70,17 +107,15 @@ PC 에이전트가 모바일 웹 번들을 직접 호스팅합니다. 폰에는 
 
 ## 빌드 · 확장
 
-소스에서 빌드하거나 새 액션 타입을 만들고 싶다면, [개발자 가이드](./training/03-developer-guide.md)에 macOS · Windows · winget 없는 환경 각각의 단계가 있습니다.
-
----
+소스에서 빌드하거나 새 액션 타입을 추가하려면 [개발자 가이드](./training/03-developer-guide.md) 를 참고하세요. macOS, Windows(winget 사용·미사용 둘 다) 단계가 모두 들어 있습니다.
 
 ## 만든 과정
 
-이 저장소는 AI 코딩 에이전트와의 협업으로 처음부터 만들어졌습니다. 그 대화와 의사결정의 기록이 [`training/`](./training)에 그대로 남아있습니다. AX 교육 실습용으로 설계되어, 학생이 같은 흐름을 재현하거나 확장할 수 있습니다.
+이 저장소는 AI 코딩 에이전트와의 협업으로 처음부터 만들어졌습니다. 그 대화와 의사결정의 기록이 [`training/`](./training)에 그대로 남아 있습니다. AX 교육 실습용으로 설계되어, 학생이 같은 흐름을 재현하거나 확장할 수 있습니다.
 
-— [`01-conversation-log.md`](./training/01-conversation-log.md) · 워크플로우 회고와 AX 협업 9원칙
-— [`02-project-spec.md`](./training/02-project-spec.md) · 프로젝트 아이템 정의서와 난이도별 챌린지
-— [`03-developer-guide.md`](./training/03-developer-guide.md) · 사전 설치와 트러블슈팅
+&nbsp;&nbsp;[`01-conversation-log.md`](./training/01-conversation-log.md) &nbsp;·&nbsp; 워크플로우 회고와 AX 협업 9원칙
+&nbsp;&nbsp;[`02-project-spec.md`](./training/02-project-spec.md) &nbsp;·&nbsp; 프로젝트 아이템 정의서와 난이도별 챌린지
+&nbsp;&nbsp;[`03-developer-guide.md`](./training/03-developer-guide.md) &nbsp;·&nbsp; 사전 설치와 트러블슈팅
 
 ---
 
