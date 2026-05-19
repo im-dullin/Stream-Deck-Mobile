@@ -2,6 +2,8 @@
 
 들고 있는 폰을 PC 컨트롤 패널로.
 
+https://github.com/im-dullin/Stream-Deck-Mobile/raw/main/docs/demo.mp4
+
 ---
 
 Elgato Stream Deck은 정말 잘 만든 제품이죠. 다만 가격이 부담스럽고, 책상 한자리도 차지하고, 버튼 개수도 정해져 있습니다. 그런데 우리는 이미 매일 손에 들고 다니는 고해상도 터치 화면이 있어요. 바로 스마트폰입니다.

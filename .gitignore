@@ -2,6 +2,10 @@
 .DS_Store
 Thumbs.db
 
+# Raw media (compressed copies live under docs/)
+/stream_deck_simul.mov
+*.mov
+
 # Node
 node_modules/
 dist/
