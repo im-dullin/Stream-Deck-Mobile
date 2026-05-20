@@ -129,6 +129,7 @@ pub fn run() {
     let state_for_setup = state.clone();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .manage(state)
         .manage(DEFAULT_PORT)
         .setup(move |app| {

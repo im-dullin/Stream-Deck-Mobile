@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 
 export interface ParsedCommand {
   program: string;
@@ -56,6 +57,21 @@ export function CommandInput({ open, onSubmit, onClose }: Props) {
     });
   };
 
+  const browseDirectory = async () => {
+    try {
+      const selected = await openDialog({
+        directory: true,
+        multiple: false,
+        title: "작업 디렉토리 선택",
+      });
+      if (typeof selected === "string") {
+        setWorkingDir(selected);
+      }
+    } catch (e) {
+      console.error("dialog open failed", e);
+    }
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -84,12 +100,21 @@ export function CommandInput({ open, onSubmit, onClose }: Props) {
           </label>
           <label className="field">
             <span>작업 디렉토리 (선택)</span>
-            <input
-              type="text"
-              placeholder="예: ~/projects/cardnews"
-              value={workingDir}
-              onChange={(e) => setWorkingDir(e.target.value)}
-            />
+            <div className="field__row">
+              <input
+                type="text"
+                placeholder="예: ~/projects/cardnews"
+                value={workingDir}
+                onChange={(e) => setWorkingDir(e.target.value)}
+              />
+              <button
+                type="button"
+                className="secondary"
+                onClick={browseDirectory}
+              >
+                찾아보기…
+              </button>
+            </div>
           </label>
           <label className="field">
             <span>표시 이름 (선택)</span>

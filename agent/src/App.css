@@ -416,6 +416,20 @@ input:focus, textarea:focus, select:focus {
   margin-top: 4px;
 }
 
+.field__row {
+  display: flex;
+  gap: 8px;
+}
+
+.field__row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.field__row button {
+  flex-shrink: 0;
+}
+
 /* Legacy action card (still referenced by single-line displays) */
 .action-card {
   background: var(--bg-elev-2);
