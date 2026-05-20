@@ -1,6 +1,6 @@
 [package]
 name = "agent"
-version = "0.1.0"
+version = "0.1.1"
 description = "Virtual Stream Deck — PC agent"
 authors = ["Stream Deck Virtual"]
 edition = "2021"
