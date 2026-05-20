@@ -62,6 +62,20 @@ pub enum Action {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         display_name: Option<String>,
     },
+    /// Spawns an arbitrary process on the host (Python scripts, shell scripts,
+    /// node programs, ...). Arguments are passed positionally — no shell
+    /// interpretation, so `|` and `>` aren't pipes; wrap such cases in a
+    /// shell script if needed. `~/` is expanded to the user's home on the
+    /// agent side.
+    RunCommand {
+        program: String,
+        #[serde(default)]
+        args: Vec<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        working_dir: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        display_name: Option<String>,
+    },
     /// Sequentially executes up to N sub-actions. Sub-actions are expected
     /// to be non-`MultiAction`; the executor flattens defensively if nested.
     MultiAction {
@@ -275,6 +289,37 @@ mod tests {
             display_name: None,
         };
         let json = serde_json::to_string(&a).unwrap();
+        assert!(!json.contains("displayName"));
+        let back: Action = serde_json::from_str(&json).unwrap();
+        assert_eq!(a, back);
+    }
+
+    #[test]
+    fn run_command_round_trip() {
+        let a = Action::RunCommand {
+            program: "python3".into(),
+            args: vec!["~/scripts/cardnews.py".into(), "--today".into()],
+            working_dir: Some("~/projects/cardnews".into()),
+            display_name: Some("오늘의 카드뉴스".into()),
+        };
+        let json = serde_json::to_string(&a).unwrap();
+        assert!(json.contains("\"type\":\"run_command\""));
+        assert!(json.contains("\"workingDir\""));
+        assert!(json.contains("\"displayName\""));
+        let back: Action = serde_json::from_str(&json).unwrap();
+        assert_eq!(a, back);
+    }
+
+    #[test]
+    fn run_command_optional_fields_omitted() {
+        let a = Action::RunCommand {
+            program: "bash".into(),
+            args: vec!["~/scripts/backup.sh".into()],
+            working_dir: None,
+            display_name: None,
+        };
+        let json = serde_json::to_string(&a).unwrap();
+        assert!(!json.contains("workingDir"));
         assert!(!json.contains("displayName"));
         let back: Action = serde_json::from_str(&json).unwrap();
         assert_eq!(a, back);

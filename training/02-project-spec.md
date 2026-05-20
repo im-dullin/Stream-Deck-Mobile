@@ -46,9 +46,10 @@ MVP 단계 1순위 페르소나: **개발자/파워유저**.
 
 - PC 에이전트가 시스템 트레이/창에 상주, LAN의 WebSocket 서버로 작동
 - 모바일이 같은 LAN에서 접속, 그리드 형태로 버튼 표시, 탭→PC에서 액션 실행
-- **액션 타입 2종**:
+- **액션 타입 3종**:
   - `launch_app` — 설치된 로컬 앱 실행 (예: `/Applications/Slack.app`)
   - `open_url` — OS 기본 브라우저로 URL 열기 (YouTube 플레이리스트 자동재생, Gmail/Notion/Slack 웹 등)
+  - `run_command` — 임의 프로세스 스폰 (Python/Node/bash 스크립트). 카드뉴스 생성, 크롤링 같은 사용자 자동화 트리거. `~/` 자동 확장. 파이프·리다이렉트는 셸 스크립트로 감싸야 동작.
 - PC 측 에디터로 버튼 매핑 구성 (그리드, 셀 선택, 인스펙터, 앱 피커)
 - 페어링: **호스트/포트만 입력 + PC 측 1회 승인 플로우**. 토큰 입력 불필요 (PC가 발급해 폰에 자동 전달, `pairings.json` 영구 저장)
 - 폰 클라이언트는 **웹** (브라우저로 접속). 네이티브 빌드는 학생 자율 과제로 이관
@@ -151,6 +152,7 @@ type Profile = {
 type Action =
   | { type: "launch_app"; appPath; appName }
   | { type: "open_url"; url; displayName? }
+  | { type: "run_command"; program; args: string[]; workingDir?; displayName? }
   | { type: "multi_action"; actions: Action[] };  // 최대 10, 순차 실행
 ```
 

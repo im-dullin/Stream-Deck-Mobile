@@ -396,7 +396,7 @@ input:focus, textarea:focus, select:focus {
   cursor: not-allowed;
 }
 
-/* URL input modal form */
+/* URL / Command input modal form */
 .modal__form {
   padding: 14px 16px;
   display: flex;
@@ -408,6 +408,11 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.field__hint {
+  font-size: 11px;
   margin-top: 4px;
 }
 

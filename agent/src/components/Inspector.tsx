@@ -7,6 +7,7 @@ import {
 } from "../types/protocol";
 import type { Action, Button, InstalledApp } from "../types/protocol";
 import { AppPicker } from "./AppPicker";
+import { CommandInput, type ParsedCommand } from "./CommandInput";
 import { UrlInput } from "./UrlInput";
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
 export function Inspector({ selection, button, onUpdate }: Props) {
   const [appPickerOpen, setAppPickerOpen] = useState(false);
   const [urlInputOpen, setUrlInputOpen] = useState(false);
+  const [commandInputOpen, setCommandInputOpen] = useState(false);
 
   if (!selection) {
     return (
@@ -68,6 +70,23 @@ export function Inspector({ selection, button, onUpdate }: Props) {
     const sub: Action = { type: "open_url", url, displayName };
     const isFirst = actions.length === 0;
     const labelFallback = displayName ?? urlDisplayName(url);
+    commit(
+      [...actions, sub],
+      isFirst ? { label: labelFallback } : undefined,
+    );
+  };
+
+  const onSubmitCommand = (cmd: ParsedCommand) => {
+    setCommandInputOpen(false);
+    const sub: Action = {
+      type: "run_command",
+      program: cmd.program,
+      args: cmd.args,
+      workingDir: cmd.workingDir,
+      displayName: cmd.displayName,
+    };
+    const isFirst = actions.length === 0;
+    const labelFallback = cmd.displayName ?? cmd.program;
     commit(
       [...actions, sub],
       isFirst ? { label: labelFallback } : undefined,
@@ -152,6 +171,16 @@ export function Inspector({ selection, button, onUpdate }: Props) {
                         <div className="action-list__path">{a.url}</div>
                       </>
                     )}
+                    {a.type === "run_command" && (
+                      <>
+                        <div className="action-list__name">
+                          ⚡ {a.displayName ?? a.program}
+                        </div>
+                        <div className="action-list__path">
+                          {[a.program, ...a.args].join(" ")}
+                        </div>
+                      </>
+                    )}
                     {a.type === "multi_action" && (
                       <div className="action-list__name muted">
                         중첩 복합 액션 (실행되지 않음)
@@ -206,6 +235,13 @@ export function Inspector({ selection, button, onUpdate }: Props) {
             >
               + URL
             </button>
+            <button
+              className="secondary"
+              onClick={() => setCommandInputOpen(true)}
+              disabled={atLimit}
+            >
+              + 명령
+            </button>
             {atLimit && (
               <span className="muted">최대 {MAX_MULTI_ACTIONS}개</span>
             )}
@@ -222,6 +258,11 @@ export function Inspector({ selection, button, onUpdate }: Props) {
         open={urlInputOpen}
         onSubmit={onSubmitUrl}
         onClose={() => setUrlInputOpen(false)}
+      />
+      <CommandInput
+        open={commandInputOpen}
+        onSubmit={onSubmitCommand}
+        onClose={() => setCommandInputOpen(false)}
       />
     </aside>
   );

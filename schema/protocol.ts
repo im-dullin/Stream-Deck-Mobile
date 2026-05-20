@@ -37,7 +37,11 @@ export interface Button {
   action: Action;
 }
 
-export type Action = LaunchAppAction | OpenUrlAction | MultiAction;
+export type Action =
+  | LaunchAppAction
+  | OpenUrlAction
+  | RunCommandAction
+  | MultiAction;
 
 export interface LaunchAppAction {
   type: "launch_app";
@@ -56,6 +60,20 @@ export interface OpenUrlAction {
   type: "open_url";
   url: string;
   /** Editor-only friendly name. Falls back to the URL's hostname. */
+  displayName?: string;
+}
+
+/**
+ * Spawn an arbitrary process. Arguments are positional — no shell interpretation,
+ * so pipes / redirects belong inside a wrapper script. `~/` is expanded to the
+ * user's home directory on the agent side.
+ */
+export interface RunCommandAction {
+  type: "run_command";
+  program: string;
+  args: string[];
+  workingDir?: string;
+  /** Editor-only friendly name. Falls back to the program if absent. */
   displayName?: string;
 }
 

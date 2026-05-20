@@ -26,7 +26,11 @@ export interface Button {
   action: Action;
 }
 
-export type Action = LaunchAppAction | OpenUrlAction | MultiAction;
+export type Action =
+  | LaunchAppAction
+  | OpenUrlAction
+  | RunCommandAction
+  | MultiAction;
 
 export interface LaunchAppAction {
   type: "launch_app";
@@ -37,6 +41,14 @@ export interface LaunchAppAction {
 export interface OpenUrlAction {
   type: "open_url";
   url: string;
+  displayName?: string;
+}
+
+export interface RunCommandAction {
+  type: "run_command";
+  program: string;
+  args: string[];
+  workingDir?: string;
   displayName?: string;
 }
 
