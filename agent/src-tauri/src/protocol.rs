@@ -62,17 +62,11 @@ pub enum Action {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         display_name: Option<String>,
     },
-    /// Spawns an arbitrary process on the host (Python scripts, shell scripts,
-    /// node programs, ...). Arguments are passed positionally — no shell
-    /// interpretation, so `|` and `>` aren't pipes; wrap such cases in a
-    /// shell script if needed. `~/` is expanded to the user's home on the
-    /// agent side.
-    RunCommand {
-        program: String,
-        #[serde(default)]
-        args: Vec<String>,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        working_dir: Option<String>,
+    /// Opens a folder in the host's file manager (Finder on macOS, Explorer
+    /// on Windows, the default `xdg-open` target on Linux). `~/` is expanded
+    /// to the user's home directory on the agent side.
+    OpenFolder {
+        path: String,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         display_name: Option<String>,
     },
@@ -295,31 +289,25 @@ mod tests {
     }
 
     #[test]
-    fn run_command_round_trip() {
-        let a = Action::RunCommand {
-            program: "python3".into(),
-            args: vec!["~/scripts/cardnews.py".into(), "--today".into()],
-            working_dir: Some("~/projects/cardnews".into()),
-            display_name: Some("오늘의 카드뉴스".into()),
+    fn open_folder_round_trip() {
+        let a = Action::OpenFolder {
+            path: "~/Documents/회의록".into(),
+            display_name: Some("이번 주 회의록".into()),
         };
         let json = serde_json::to_string(&a).unwrap();
-        assert!(json.contains("\"type\":\"run_command\""));
-        assert!(json.contains("\"workingDir\""));
+        assert!(json.contains("\"type\":\"open_folder\""));
         assert!(json.contains("\"displayName\""));
         let back: Action = serde_json::from_str(&json).unwrap();
         assert_eq!(a, back);
     }
 
     #[test]
-    fn run_command_optional_fields_omitted() {
-        let a = Action::RunCommand {
-            program: "bash".into(),
-            args: vec!["~/scripts/backup.sh".into()],
-            working_dir: None,
+    fn open_folder_optional_display_name_omitted() {
+        let a = Action::OpenFolder {
+            path: "/Users/foo/work".into(),
             display_name: None,
         };
         let json = serde_json::to_string(&a).unwrap();
-        assert!(!json.contains("workingDir"));
         assert!(!json.contains("displayName"));
         let back: Action = serde_json::from_str(&json).unwrap();
         assert_eq!(a, back);

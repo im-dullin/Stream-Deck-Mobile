@@ -108,13 +108,9 @@ sealed class Action {
           url: json['url'] as String,
           displayName: json['displayName'] as String?,
         );
-      case 'run_command':
-        return RunCommandAction(
-          program: json['program'] as String,
-          args: (json['args'] as List<dynamic>? ?? const [])
-              .map((e) => e as String)
-              .toList(growable: false),
-          workingDir: json['workingDir'] as String?,
+      case 'open_folder':
+        return OpenFolderAction(
+          path: json['path'] as String,
           displayName: json['displayName'] as String?,
         );
       case 'multi_action':
@@ -141,17 +137,10 @@ class OpenUrlAction extends Action {
   const OpenUrlAction({required this.url, this.displayName});
 }
 
-class RunCommandAction extends Action {
-  final String program;
-  final List<String> args;
-  final String? workingDir;
+class OpenFolderAction extends Action {
+  final String path;
   final String? displayName;
-  const RunCommandAction({
-    required this.program,
-    required this.args,
-    this.workingDir,
-    this.displayName,
-  });
+  const OpenFolderAction({required this.path, this.displayName});
 }
 
 class MultiAction extends Action {

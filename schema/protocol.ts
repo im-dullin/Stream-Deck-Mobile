@@ -40,7 +40,7 @@ export interface Button {
 export type Action =
   | LaunchAppAction
   | OpenUrlAction
-  | RunCommandAction
+  | OpenFolderAction
   | MultiAction;
 
 export interface LaunchAppAction {
@@ -64,16 +64,14 @@ export interface OpenUrlAction {
 }
 
 /**
- * Spawn an arbitrary process. Arguments are positional — no shell interpretation,
- * so pipes / redirects belong inside a wrapper script. `~/` is expanded to the
- * user's home directory on the agent side.
+ * Reveal a directory in the host's file manager (Finder on macOS, Explorer
+ * on Windows). `~/` is expanded to the user's home directory on the agent
+ * side, so portable paths like `~/Documents/회의록` work.
  */
-export interface RunCommandAction {
-  type: "run_command";
-  program: string;
-  args: string[];
-  workingDir?: string;
-  /** Editor-only friendly name. Falls back to the program if absent. */
+export interface OpenFolderAction {
+  type: "open_folder";
+  path: string;
+  /** Editor-only friendly name. Falls back to the last path segment. */
   displayName?: string;
 }
 

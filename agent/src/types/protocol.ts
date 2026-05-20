@@ -29,7 +29,7 @@ export interface Button {
 export type Action =
   | LaunchAppAction
   | OpenUrlAction
-  | RunCommandAction
+  | OpenFolderAction
   | MultiAction;
 
 export interface LaunchAppAction {
@@ -44,11 +44,9 @@ export interface OpenUrlAction {
   displayName?: string;
 }
 
-export interface RunCommandAction {
-  type: "run_command";
-  program: string;
-  args: string[];
-  workingDir?: string;
+export interface OpenFolderAction {
+  type: "open_folder";
+  path: string;
   displayName?: string;
 }
 
@@ -67,6 +65,13 @@ export function urlDisplayName(url: string): string {
   } catch {
     return url;
   }
+}
+
+/** Last path segment as a folder's friendly name. */
+export function folderDisplayName(path: string): string {
+  const cleaned = path.replace(/[\\/]+$/, "");
+  const parts = cleaned.split(/[\\/]/);
+  return parts[parts.length - 1] || cleaned;
 }
 
 /** Normalize a button's action into a flat list (single → [single]; multi → list). */

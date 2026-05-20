@@ -13,8 +13,8 @@ use crate::protocol::Action;
 use anyhow::Result;
 
 pub mod launch_app;
+pub mod open_folder;
 pub mod open_url;
-pub mod run_command;
 
 pub async fn execute(action: &Action) -> Result<()> {
     match action {
@@ -36,12 +36,7 @@ async fn execute_single(action: &Action) -> Result<()> {
             launch_app::run(app_path, app_name).await
         }
         Action::OpenUrl { url, .. } => open_url::run(url).await,
-        Action::RunCommand {
-            program,
-            args,
-            working_dir,
-            ..
-        } => run_command::run(program, args, working_dir.as_deref()).await,
+        Action::OpenFolder { path, .. } => open_folder::run(path).await,
         Action::MultiAction { .. } => {
             // Nested multi-actions are conceptually allowed by the schema but
             // the editor UI keeps the structure flat; flatten defensively.

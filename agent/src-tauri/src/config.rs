@@ -22,17 +22,34 @@ pub fn profile_path() -> Result<PathBuf> {
 
 pub async fn load_or_init() -> Result<Profile> {
     let path = profile_path()?;
-    if path.exists() {
-        let bytes = fs::read(&path)
-            .await
-            .with_context(|| format!("read {}", path.display()))?;
-        let profile: Profile =
-            serde_json::from_slice(&bytes).context("parse profile.json")?;
-        Ok(profile)
-    } else {
+    if !path.exists() {
         let profile = default_profile();
         save(&profile).await?;
-        Ok(profile)
+        return Ok(profile);
+    }
+
+    let bytes = fs::read(&path)
+        .await
+        .with_context(|| format!("read {}", path.display()))?;
+
+    match serde_json::from_slice::<Profile>(&bytes) {
+        Ok(profile) => Ok(profile),
+        Err(e) => {
+            // A previous build may have stored action types we no longer
+            // understand (e.g. an experimental variant that was removed).
+            // Move the existing file aside so the user can hand-merge if
+            // they want, and start with a clean default.
+            let backup = path.with_extension("json.bak");
+            tracing::warn!(
+                error = ?e,
+                backup = %backup.display(),
+                "profile.json failed to parse — backing up and resetting to default"
+            );
+            let _ = fs::rename(&path, &backup).await;
+            let profile = default_profile();
+            save(&profile).await?;
+            Ok(profile)
+        }
     }
 }
 

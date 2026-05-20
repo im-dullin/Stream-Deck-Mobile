@@ -2,12 +2,13 @@ import { useState } from "react";
 import {
   collapseActions,
   expandActions,
+  folderDisplayName,
   MAX_MULTI_ACTIONS,
   urlDisplayName,
 } from "../types/protocol";
 import type { Action, Button, InstalledApp } from "../types/protocol";
 import { AppPicker } from "./AppPicker";
-import { CommandInput, type ParsedCommand } from "./CommandInput";
+import { FolderInput } from "./FolderInput";
 import { UrlInput } from "./UrlInput";
 
 interface Props {
@@ -19,7 +20,7 @@ interface Props {
 export function Inspector({ selection, button, onUpdate }: Props) {
   const [appPickerOpen, setAppPickerOpen] = useState(false);
   const [urlInputOpen, setUrlInputOpen] = useState(false);
-  const [commandInputOpen, setCommandInputOpen] = useState(false);
+  const [folderInputOpen, setFolderInputOpen] = useState(false);
 
   if (!selection) {
     return (
@@ -76,17 +77,11 @@ export function Inspector({ selection, button, onUpdate }: Props) {
     );
   };
 
-  const onSubmitCommand = (cmd: ParsedCommand) => {
-    setCommandInputOpen(false);
-    const sub: Action = {
-      type: "run_command",
-      program: cmd.program,
-      args: cmd.args,
-      workingDir: cmd.workingDir,
-      displayName: cmd.displayName,
-    };
+  const onSubmitFolder = (path: string, displayName: string | undefined) => {
+    setFolderInputOpen(false);
+    const sub: Action = { type: "open_folder", path, displayName };
     const isFirst = actions.length === 0;
-    const labelFallback = cmd.displayName ?? cmd.program;
+    const labelFallback = displayName ?? folderDisplayName(path);
     commit(
       [...actions, sub],
       isFirst ? { label: labelFallback } : undefined,
@@ -171,14 +166,12 @@ export function Inspector({ selection, button, onUpdate }: Props) {
                         <div className="action-list__path">{a.url}</div>
                       </>
                     )}
-                    {a.type === "run_command" && (
+                    {a.type === "open_folder" && (
                       <>
                         <div className="action-list__name">
-                          ⚡ {a.displayName ?? a.program}
+                          📁 {a.displayName ?? folderDisplayName(a.path)}
                         </div>
-                        <div className="action-list__path">
-                          {[a.program, ...a.args].join(" ")}
-                        </div>
+                        <div className="action-list__path">{a.path}</div>
                       </>
                     )}
                     {a.type === "multi_action" && (
@@ -237,10 +230,10 @@ export function Inspector({ selection, button, onUpdate }: Props) {
             </button>
             <button
               className="secondary"
-              onClick={() => setCommandInputOpen(true)}
+              onClick={() => setFolderInputOpen(true)}
               disabled={atLimit}
             >
-              + 명령
+              + 폴더
             </button>
             {atLimit && (
               <span className="muted">최대 {MAX_MULTI_ACTIONS}개</span>
@@ -259,10 +252,10 @@ export function Inspector({ selection, button, onUpdate }: Props) {
         onSubmit={onSubmitUrl}
         onClose={() => setUrlInputOpen(false)}
       />
-      <CommandInput
-        open={commandInputOpen}
-        onSubmit={onSubmitCommand}
-        onClose={() => setCommandInputOpen(false)}
+      <FolderInput
+        open={folderInputOpen}
+        onSubmit={onSubmitFolder}
+        onClose={() => setFolderInputOpen(false)}
       />
     </aside>
   );
