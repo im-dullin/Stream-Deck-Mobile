@@ -187,6 +187,12 @@ mod windows {
     /// and emits one record per line in the format:
     ///   `APP|<name>|<target_path>|<icon_base64>`
     /// Lines that fail at any step are silently skipped.
+    ///
+    /// Icon source priority (KakaoTalk-style apps use a launcher .exe with
+    /// no embedded icon and stash the real icon in the .lnk's IconLocation):
+    ///   1. The .lnk's IconLocation property — `path,index` form
+    ///   2. The .lnk file itself (Windows-resolved shortcut icon)
+    ///   3. The target .exe
     const DISCOVERY_SCRIPT: &str = r#"
 $ErrorActionPreference = 'SilentlyContinue'
 Add-Type -AssemblyName System.Drawing 2>$null
@@ -196,6 +202,31 @@ $menus = @(
     [System.IO.Path]::Combine($env:APPDATA, 'Microsoft\Windows\Start Menu\Programs'),
     [System.IO.Path]::Combine($env:PROGRAMDATA, 'Microsoft\Windows\Start Menu\Programs')
 )
+
+function Get-IconBase64 {
+    param([string[]]$Candidates)
+    foreach ($cand in $Candidates) {
+        if ([string]::IsNullOrEmpty($cand)) { continue }
+        if (-not [System.IO.File]::Exists($cand)) { continue }
+        $icon = $null
+        try {
+            if ($cand.ToLower().EndsWith('.ico')) {
+                $icon = New-Object System.Drawing.Icon($cand)
+            } else {
+                $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($cand)
+            }
+            if ($icon -eq $null) { continue }
+            $bmp = $icon.ToBitmap()
+            $resized = New-Object System.Drawing.Bitmap($bmp, 128, 128)
+            $ms = New-Object System.IO.MemoryStream
+            $resized.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
+            $b64 = [Convert]::ToBase64String($ms.ToArray())
+            $ms.Dispose(); $resized.Dispose(); $bmp.Dispose(); $icon.Dispose()
+            if (-not [string]::IsNullOrEmpty($b64)) { return $b64 }
+        } catch { }
+    }
+    return ''
+}
 
 $seen = @{}
 foreach ($menu in $menus) {
@@ -209,18 +240,12 @@ foreach ($menu in $menus) {
             if ($seen.ContainsKey($target)) { return }
             $seen[$target] = $true
 
-            $b64 = ''
-            try {
-                $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($target)
-                if ($icon -ne $null) {
-                    $bmp = $icon.ToBitmap()
-                    $resized = New-Object System.Drawing.Bitmap($bmp, 128, 128)
-                    $ms = New-Object System.IO.MemoryStream
-                    $resized.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
-                    $b64 = [Convert]::ToBase64String($ms.ToArray())
-                    $ms.Dispose(); $resized.Dispose(); $bmp.Dispose(); $icon.Dispose()
-                }
-            } catch { }
+            $iconLocFile = ''
+            if (-not [string]::IsNullOrEmpty($sc.IconLocation)) {
+                $iconLocFile = ($sc.IconLocation -split ',')[0].Trim()
+            }
+
+            $b64 = Get-IconBase64 @($iconLocFile, $_.FullName, $target)
 
             $name = [System.IO.Path]::GetFileNameWithoutExtension($_.FullName)
             Write-Host ('APP|' + $name + '|' + $target + '|' + $b64)
