@@ -176,6 +176,7 @@ flutter run -d chrome --web-port 8091   # 다른 포트로
 | `link.exe not found` 빌드 에러 | MSVC Build Tools 없음 | VS Build Tools 설치 + "Desktop development with C++" 워크로드 + 재부팅 |
 | `flutter doctor` 에서 Visual Studio 미감지 | C++ 워크로드 누락 | VS Installer → Modify → "Desktop development with C++" 추가 |
 | 폰에서 빈 화면 / 연결 시 timeout | Windows Defender 방화벽 차단 | 방화벽 팝업이 떴을 때 "개인 네트워크"+"액세스 허용" 체크. 놓쳤으면 제어판 → Windows Defender 방화벽 → 인바운드 규칙에서 "가상 스트림덱" 찾아 허용 |
+| Chrome 다운로드가 `확인되지 않음 ...crdownload` 로 멈춤 | Chrome Safe Browsing 이 미서명 .msi 차단 | `Ctrl+J` → 해당 항목 → "위험한 파일이지만 계속" / "보관" 클릭. Edge 도 유사. Firefox 는 보통 한 번에 받아짐 |
 | 인스톨러 실행 시 "Windows의 PC 보호" 경고 | 코드사이닝 없음 (오픈소스 SW 정상) | "추가 정보" → "실행" 클릭 |
 | `npm run tauri dev` 가 5분 넘게 안 끝남 | 첫 의존성 다운로드 중 (Rust 크레이트 ~500개 컴파일) | 10분 인내. `target/` 캐시 생긴 이후로는 빠름. 중간에 끊으면 다시 받음 |
 | WebView2 missing 에러 (Win10 구버전) | WebView2 Runtime 부재 | https://developer.microsoft.com/en-us/microsoft-edge/webview2/ → Evergreen 다운로드 |
